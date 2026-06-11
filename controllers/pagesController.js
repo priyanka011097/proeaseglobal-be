@@ -8,6 +8,8 @@ const defaults = {
         text2: "Since our beginning, we've worked to curate a diverse selection of high-quality products, sourced from trusted makers and suppliers, that cater to every taste and need.",
         missionTitle: "Our Mission",
         missionText: "Our mission is to empower customers with choice, convenience, and confidence — delivering a seamless experience from browsing to delivery and beyond.",
+        visionTitle: "Our Vision",
+        visionText: "To create a world-class global marketplace where customers can confidently meet their buying needs through our curated selection of quality products, backed by trust, innovation, and exceptional service.",
         points: [
             { title: "Quality Assurance", text: "We meticulously select and vet each product to ensure it meets our stringent quality standards." },
             { title: "Convenience", text: "With our user-friendly interface and hassle-free ordering process, shopping has never been easier." },

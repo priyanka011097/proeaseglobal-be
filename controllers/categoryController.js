@@ -70,4 +70,15 @@ const removeCategory = async (req, res) => {
     }
 }
 
-export { addCategory, listCategories, updateCategory, removeCategory }
+// function for removing ALL categories (admin bulk action)
+const removeAllCategories = async (req, res) => {
+    try {
+        const result = await categoryModel.deleteMany({})
+        res.json({ success: true, message: `Deleted ${result.deletedCount} category(ies)` })
+    } catch (error) {
+        console.log(error)
+        res.json({ success: false, message: error.message })
+    }
+}
+
+export { addCategory, listCategories, updateCategory, removeCategory, removeAllCategories }

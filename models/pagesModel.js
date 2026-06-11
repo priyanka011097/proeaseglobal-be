@@ -13,6 +13,8 @@ const pagesSchema = new mongoose.Schema({
         text2: { type: String, default: "" },
         missionTitle: { type: String, default: "Our Mission" },
         missionText: { type: String, default: "" },
+        visionTitle: { type: String, default: "Our Vision" },
+        visionText: { type: String, default: "" },
         points: { type: [pointSchema], default: [] },
     },
     contact: {

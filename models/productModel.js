@@ -9,6 +9,8 @@ const productSchema = new mongoose.Schema({
     subCategory: { type: String, required: true },
     sizes: { type: Array, required: true },
     bestseller: { type: Boolean },
+    color: { type: String, default: "" },
+    fabric: { type: String, default: "" },
     sku: { type: String, default: "" },   // used to dedupe bulk imports
     date: { type: Number, required: true }
 })
