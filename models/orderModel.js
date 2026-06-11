@@ -8,6 +8,7 @@ const orderSchema = new mongoose.Schema({
     status: { type: String, required: true, default:'Order Placed' },
     paymentMethod: { type: String, required: true },
     payment: { type: Boolean, required: true , default: false },
+    stockDeducted: { type: Boolean, default: false },   // stock reduced once on delivery
     date: {type: Number, required:true}
 })
 

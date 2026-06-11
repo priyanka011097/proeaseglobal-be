@@ -11,6 +11,8 @@ const productSchema = new mongoose.Schema({
     bestseller: { type: Boolean },
     color: { type: String, default: "" },
     fabric: { type: String, default: "" },
+    details: { type: Array, default: [] },   // [{ label, value }] spec table
+    stock: { type: Array, default: [] },     // [{ size, stock }] per-size stock
     sku: { type: String, default: "" },   // used to dedupe bulk imports
     date: { type: Number, required: true }
 })

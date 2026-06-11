@@ -99,6 +99,8 @@ const addProductsBulk = async (req, res) => {
                 bestseller: !!raw.bestseller,
                 color: raw.color || "",
                 fabric: raw.fabric || "",
+                details: Array.isArray(raw.details) ? raw.details : [],
+                stock: Array.isArray(raw.stock) ? raw.stock : [],
                 sku,
                 date: Date.now(),
             })

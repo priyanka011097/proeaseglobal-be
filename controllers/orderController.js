@@ -1,5 +1,6 @@
 import orderModel from "../models/orderModel.js";
 import userModel from "../models/userModel.js";
+import productModel from "../models/productModel.js";
 import Stripe from 'stripe'
 import razorpay from 'razorpay'
 
@@ -230,11 +231,36 @@ const userOrders = async (req,res) => {
 // update order status from Admin Panel
 const updateStatus = async (req,res) => {
     try {
-        
+
         const { orderId, status } = req.body
 
-        await orderModel.findByIdAndUpdate(orderId, { status })
-        res.json({success:true,message:'Status Updated'})
+        const order = await orderModel.findById(orderId)
+        if (!order) return res.json({ success: false, message: 'Order not found' })
+
+        // Reduce per-size stock once, when the order is marked Delivered.
+        if (status === 'Delivered' && !order.stockDeducted) {
+            for (const item of (order.items || [])) {
+                if (!item || !item.size) continue
+                const qty = Number(item.quantity) || 0
+                if (qty <= 0) continue
+                // Match by id; fall back to SKU (id changes if a product was re-imported).
+                let product = null
+                if (item._id) product = await productModel.findById(item._id).catch(() => null)
+                if (!product && item.sku) product = await productModel.findOne({ sku: item.sku })
+                if (!product || !Array.isArray(product.stock)) continue
+                const entry = product.stock.find((s) => s.size === item.size)
+                if (entry) {
+                    entry.stock = Math.max(0, (Number(entry.stock) || 0) - qty)
+                    product.markModified('stock')
+                    await product.save()
+                }
+            }
+            order.stockDeducted = true
+        }
+
+        order.status = status
+        await order.save()
+        res.json({ success: true, message: 'Status Updated' })
 
     } catch (error) {
         console.log(error)
