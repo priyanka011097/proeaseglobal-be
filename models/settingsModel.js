@@ -18,6 +18,11 @@ const settingsSchema = new mongoose.Schema({
     // Storefront theme colors
     themeBg: { type: String, default: "#FFF6F2" },
     themeText: { type: String, default: "#2B2B2B" },
+    // SEO / metadata
+    seoTitle: { type: String, default: "" },
+    seoDescription: { type: String, default: "" },
+    seoKeywords: { type: String, default: "" },
+    seoImage: { type: String, default: "" },   // social share (Open Graph) image
 })
 
 const settingsModel = mongoose.models.settings || mongoose.model("settings", settingsSchema);

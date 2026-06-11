@@ -15,6 +15,10 @@ const defaults = {
     announcementLink: "",
     themeBg: "#FFF6F2",
     themeText: "#2B2B2B",
+    seoTitle: "",
+    seoDescription: "",
+    seoKeywords: "",
+    seoImage: "",
 }
 
 // Public: return the current site settings (or defaults).
@@ -56,13 +60,28 @@ const updateSettings = async (req, res) => {
             announcementLink: b.announcementLink ?? (existing?.announcementLink ?? defaults.announcementLink),
             themeBg: b.themeBg ?? (existing?.themeBg ?? defaults.themeBg),
             themeText: b.themeText ?? (existing?.themeText ?? defaults.themeText),
+            seoTitle: b.seoTitle ?? (existing?.seoTitle ?? defaults.seoTitle),
+            seoDescription: b.seoDescription ?? (existing?.seoDescription ?? defaults.seoDescription),
+            seoKeywords: b.seoKeywords ?? (existing?.seoKeywords ?? defaults.seoKeywords),
+            seoImage: existing?.seoImage ?? "",
         }
+
+        // Image uploads (settings route accepts logo + seoImage fields).
+        const logoFile = req.files?.logo?.[0] || (req.file && req.file.fieldname === 'logo' ? req.file : null)
+        const seoFile = req.files?.seoImage?.[0]
 
         if (b.removeLogo === 'true') {
             update.logo = ""
-        } else if (req.file) {
-            const result = await cloudinary.uploader.upload(req.file.path, { resource_type: 'image' })
+        } else if (logoFile) {
+            const result = await cloudinary.uploader.upload(logoFile.path, { resource_type: 'image' })
             update.logo = result.secure_url
+        }
+
+        if (b.removeSeoImage === 'true') {
+            update.seoImage = ""
+        } else if (seoFile) {
+            const result = await cloudinary.uploader.upload(seoFile.path, { resource_type: 'image' })
+            update.seoImage = result.secure_url
         }
 
         const settings = await settingsModel.findOneAndUpdate({}, update, { new: true, upsert: true })
