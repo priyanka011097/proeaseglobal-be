@@ -26,6 +26,14 @@ const pagesSchema = new mongoose.Schema({
         careersTitle: { type: String, default: "Careers" },
         careersText: { type: String, default: "" },
     },
+    privacy: {
+        title: { type: String, default: "Privacy Policy" },
+        body: { type: String, default: "" },
+    },
+    terms: {
+        title: { type: String, default: "Terms & Conditions" },
+        body: { type: String, default: "" },
+    },
 })
 
 const pagesModel = mongoose.models.pages || mongoose.model("pages", pagesSchema);

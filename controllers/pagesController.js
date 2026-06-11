@@ -25,6 +25,14 @@ const defaults = {
         careersTitle: "Careers at ProEase Global",
         careersText: "Learn more about our teams and job openings.",
     },
+    privacy: {
+        title: "Privacy Policy",
+        body: "At ProEase Global, we respect your privacy and are committed to protecting the personal information you share with us.\n\nInformation we collect: When you place an order or contact us, we collect details such as your name, email, phone number, and shipping address.\n\nHow we use it: Your information is used solely to process orders, provide support, and improve your shopping experience. We do not sell your data to third parties.\n\nSecurity: We use industry-standard measures to keep your information safe.\n\nContact: For any privacy-related questions, email us at info@proeaseglobal.com.",
+    },
+    terms: {
+        title: "Terms & Conditions",
+        body: "Welcome to ProEase Global. By using our website and placing an order, you agree to the following terms.\n\nOrders: All orders are subject to availability and confirmation of the order price.\n\nPricing: Prices are listed in INR and are subject to change without notice.\n\nShipping & Returns: Please refer to our shipping and return policies. Returns are accepted within 7 days of delivery for unused items in original condition.\n\nIntellectual property: All content on this site is the property of ProEase Global and may not be used without permission.\n\nContact: For questions about these terms, email info@proeaseglobal.com.",
+    },
 }
 
 const getPages = async (req, res) => {
@@ -46,6 +54,8 @@ const updatePages = async (req, res) => {
         const existing = await pagesModel.findOne({})
         const about = { ...(existing?.about?.toObject?.() || existing?.about || defaults.about), ...(data.about || {}) }
         const contact = { ...(existing?.contact?.toObject?.() || existing?.contact || defaults.contact), ...(data.contact || {}) }
+        const privacy = { ...(existing?.privacy?.toObject?.() || existing?.privacy || defaults.privacy), ...(data.privacy || {}) }
+        const terms = { ...(existing?.terms?.toObject?.() || existing?.terms || defaults.terms), ...(data.terms || {}) }
 
         // Optional image uploads (keep existing if no new file).
         const aboutFile = req.files?.aboutImage?.[0]
@@ -59,7 +69,7 @@ const updatePages = async (req, res) => {
             contact.image = r.secure_url
         }
 
-        const pages = await pagesModel.findOneAndUpdate({}, { about, contact }, { new: true, upsert: true })
+        const pages = await pagesModel.findOneAndUpdate({}, { about, contact, privacy, terms }, { new: true, upsert: true })
         res.json({ success: true, message: "Pages Updated", pages })
     } catch (error) {
         console.log(error)
