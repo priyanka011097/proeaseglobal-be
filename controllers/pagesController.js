@@ -59,10 +59,15 @@ const updatePages = async (req, res) => {
 
         // Optional image uploads (keep existing if no new file).
         const aboutFile = req.files?.aboutImage?.[0]
+        const aboutLogoFile = req.files?.aboutLogo?.[0]
         const contactFile = req.files?.contactImage?.[0]
         if (aboutFile) {
             const r = await cloudinary.uploader.upload(aboutFile.path, { resource_type: 'image' })
             about.image = r.secure_url
+        }
+        if (aboutLogoFile) {
+            const r = await cloudinary.uploader.upload(aboutLogoFile.path, { resource_type: 'image' })
+            about.logo = r.secure_url
         }
         if (contactFile) {
             const r = await cloudinary.uploader.upload(contactFile.path, { resource_type: 'image' })

@@ -9,6 +9,7 @@ const pointSchema = new mongoose.Schema({
 const pagesSchema = new mongoose.Schema({
     about: {
         image: { type: String, default: "" },
+        logo: { type: String, default: "" },   // optional logo/secondary image shown beside the text
         text1: { type: String, default: "" },
         text2: { type: String, default: "" },
         missionTitle: { type: String, default: "Our Mission" },

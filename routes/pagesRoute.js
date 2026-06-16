@@ -6,6 +6,6 @@ import adminAuth from '../middleware/adminAuth.js';
 const pagesRouter = express.Router();
 
 pagesRouter.get('/get', getPages);
-pagesRouter.post('/update', adminAuth, upload.fields([{ name: 'aboutImage', maxCount: 1 }, { name: 'contactImage', maxCount: 1 }]), updatePages);
+pagesRouter.post('/update', adminAuth, upload.fields([{ name: 'aboutImage', maxCount: 1 }, { name: 'aboutLogo', maxCount: 1 }, { name: 'contactImage', maxCount: 1 }]), updatePages);
 
 export default pagesRouter
