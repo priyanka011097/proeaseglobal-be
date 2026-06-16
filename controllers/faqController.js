@@ -2,7 +2,7 @@ import faqModel from "../models/faqModel.js"
 
 const defaults = {
     items: [
-        { question: "How long does delivery take?", answer: "Orders are typically dispatched within 1–2 business days and delivered within 5–7 business days, depending on your location." },
+        { question: "How long does delivery take?", answer: "Orders are typically delivered within 8 to 14 days, depending on your location." },
         { question: "Do you ship worldwide?", answer: "Yes, we ship across India and to most international destinations. Shipping charges are calculated at checkout." },
         { question: "What is your return policy?", answer: "We offer hassle-free returns within 7 days of delivery for unused items in their original condition." },
         { question: "Which payment methods do you accept?", answer: "We accept UPI, major credit/debit cards, net banking, and popular wallets." },
