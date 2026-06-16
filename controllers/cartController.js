@@ -8,7 +8,10 @@ const addToCart = async (req,res) => {
         const { userId, itemId, size } = req.body
 
         const userData = await userModel.findById(userId)
-        let cartData = await userData.cartData;
+        if (!userData) {
+            return res.json({ success: false, message: "Session expired, please log in again" })
+        }
+        let cartData = userData.cartData || {};
 
         if (cartData[itemId]) {
             if (cartData[itemId][size]) {
@@ -39,8 +42,12 @@ const updateCart = async (req,res) => {
         const { userId ,itemId, size, quantity } = req.body
 
         const userData = await userModel.findById(userId)
-        let cartData = await userData.cartData;
+        if (!userData) {
+            return res.json({ success: false, message: "Session expired, please log in again" })
+        }
+        let cartData = userData.cartData || {};
 
+        if (!cartData[itemId]) cartData[itemId] = {}
         cartData[itemId][size] = quantity
 
         await userModel.findByIdAndUpdate(userId, {cartData})
@@ -59,9 +66,12 @@ const getUserCart = async (req,res) => {
     try {
         
         const { userId } = req.body
-        
+
         const userData = await userModel.findById(userId)
-        let cartData = await userData.cartData;
+        if (!userData) {
+            return res.json({ success: false, message: "Session expired, please log in again" })
+        }
+        let cartData = userData.cartData || {};
 
         res.json({ success: true, cartData })
 

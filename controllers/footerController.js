@@ -23,6 +23,7 @@ const defaults = {
     email: "info@proeaseglobal.com",
     phone: "+91 91369 61528",
     hours: "Mon – Sat, 10am – 7pm",
+    social: { facebook: "", instagram: "", linkedin: "", whatsapp: "" },
     copyright: "© 2026 Proease Global. All rights reserved.",
     tagline: "Made with care.",
 }
@@ -57,6 +58,14 @@ const updateFooter = async (req, res) => {
                 .map((f) => ({ icon: f.icon || 'truck', heading: f.heading }))
             : defaults.features
 
+        const s = b.social || {}
+        const social = {
+            facebook: s.facebook || "",
+            instagram: s.instagram || "",
+            linkedin: s.linkedin || "",
+            whatsapp: s.whatsapp || "",
+        }
+
         const update = {
             brandName: b.brandName ?? defaults.brandName,
             features,
@@ -67,6 +76,7 @@ const updateFooter = async (req, res) => {
             email: b.email ?? defaults.email,
             phone: b.phone ?? defaults.phone,
             hours: b.hours ?? defaults.hours,
+            social,
             copyright: b.copyright ?? defaults.copyright,
             tagline: b.tagline ?? defaults.tagline,
         }

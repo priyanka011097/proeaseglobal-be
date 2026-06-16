@@ -8,7 +8,7 @@ const PLACEHOLDER_IMG = "https://placehold.co/600x800?text=No+Image"
 const addProduct = async (req, res) => {
     try {
 
-        const { name, description, price, category, subCategory, sizes, bestseller, color, fabric } = req.body
+        const { name, description, price, originalPrice, abroadPrice, category, subCategory, sizes, bestseller, color, fabric } = req.body
 
         const image1 = req.files.image1 && req.files.image1[0]
         const image2 = req.files.image2 && req.files.image2[0]
@@ -29,6 +29,8 @@ const addProduct = async (req, res) => {
             description,
             category,
             price: Number(price),
+            originalPrice: Number(originalPrice) || 0,
+            abroadPrice: Number(abroadPrice) || 0,
             subCategory,
             bestseller: bestseller === "true" ? true : false,
             sizes: JSON.parse(sizes),
@@ -92,6 +94,8 @@ const addProductsBulk = async (req, res) => {
                 name,
                 description: (raw.description || name).toString(),
                 price,
+                originalPrice: Number(raw.originalPrice) || 0,
+                abroadPrice: Number(raw.abroadPrice) || 0,
                 category,
                 subCategory: (raw.subCategory || "Topwear").toString(),
                 sizes: Array.isArray(raw.sizes) && raw.sizes.length > 0 ? raw.sizes : ["Free Size"],

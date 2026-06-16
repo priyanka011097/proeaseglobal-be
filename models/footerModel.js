@@ -29,6 +29,15 @@ const footerSchema = new mongoose.Schema({
     email: { type: String, default: "info@proeaseglobal.com" },
     phone: { type: String, default: "+91 91369 61528" },
     hours: { type: String, default: "Mon – Sat, 10am – 7pm" },
+    social: {
+        type: new mongoose.Schema({
+            facebook: { type: String, default: "" },
+            instagram: { type: String, default: "" },
+            linkedin: { type: String, default: "" },
+            whatsapp: { type: String, default: "" },
+        }, { _id: false }),
+        default: () => ({}),
+    },
     copyright: { type: String, default: "© 2026 Proease Global. All rights reserved." },
     tagline: { type: String, default: "Made with care." },
 })

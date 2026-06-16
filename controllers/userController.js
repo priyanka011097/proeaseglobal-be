@@ -153,4 +153,15 @@ const adminLogin = async (req, res) => {
 }
 
 
-export { loginUser, registerUser, adminLogin, googleLogin }
+// Delete ALL users (admin bulk action)
+const removeAllUsers = async (req, res) => {
+    try {
+        const result = await userModel.deleteMany({})
+        res.json({ success: true, message: `Deleted ${result.deletedCount} user(s)` })
+    } catch (error) {
+        console.log(error)
+        res.json({ success: false, message: error.message })
+    }
+}
+
+export { loginUser, registerUser, adminLogin, googleLogin, removeAllUsers }

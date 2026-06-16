@@ -3,7 +3,9 @@ import mongoose from "mongoose";
 const productSchema = new mongoose.Schema({
     name: { type: String, required: true },
     description: { type: String, required: true },
-    price: { type: Number, required: true },
+    price: { type: Number, required: true },          // India final price (INR) — shown as the selling price
+    originalPrice: { type: Number, default: 0 },      // India MRP (INR) — shown crossed out
+    abroadPrice: { type: Number, default: 0 },        // price for non-India visitors (stored in INR, shown as USD)
     image: { type: Array, required: true },
     category: { type: String, required: true },
     subCategory: { type: String, required: true },

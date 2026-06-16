@@ -1,6 +1,7 @@
 import orderModel from "../models/orderModel.js";
 import userModel from "../models/userModel.js";
 import productModel from "../models/productModel.js";
+import { createShipment } from "../utils/shiprocket.js";
 import Stripe from 'stripe'
 import razorpay from 'razorpay'
 
@@ -32,13 +33,14 @@ const placeOrder = async (req,res) => {
     
     try {
         
-        const { userId, items, amount, address} = req.body;
+        const { userId, items, amount, address, currency: orderCurrency } = req.body;
 
         const orderData = {
             userId,
             items,
             address,
             amount,
+            currency: (orderCurrency || 'INR').toUpperCase(),
             paymentMethod:"COD",
             payment:false,
             date: Date.now()
@@ -142,13 +144,16 @@ const verifyStripe = async (req,res) => {
 const placeOrderRazorpay = async (req,res) => {
     try {
         
-        const { userId, items, amount, address} = req.body
+        const { userId, items, amount, address, currency: orderCurrency } = req.body
+
+        const cur = (orderCurrency || currency).toUpperCase()
 
         const orderData = {
             userId,
             items,
             address,
             amount,
+            currency: cur,
             paymentMethod:"Razorpay",
             payment:false,
             date: Date.now()
@@ -158,8 +163,8 @@ const placeOrderRazorpay = async (req,res) => {
         await newOrder.save()
 
         const options = {
-            amount: amount * 100,
-            currency: currency.toUpperCase(),
+            amount: Math.round(amount * 100),
+            currency: cur,
             receipt : newOrder._id.toString()
         }
 
@@ -188,7 +193,10 @@ const verifyRazorpay = async (req,res) => {
             await userModel.findByIdAndUpdate(userId,{cartData:{}})
             res.json({ success: true, message: "Payment Successful" })
         } else {
-             res.json({ success: false, message: 'Payment Failed' });
+            // Payment not completed — remove the placeholder order so it never
+            // shows up as a "placed" order.
+            await orderModel.findByIdAndDelete(orderInfo.receipt)
+            res.json({ success: false, message: 'Payment Failed' });
         }
 
     } catch (error) {
@@ -202,8 +210,9 @@ const verifyRazorpay = async (req,res) => {
 const allOrders = async (req,res) => {
 
     try {
-        
-        const orders = await orderModel.find({})
+
+        // Hide online-payment orders that were never actually paid (abandoned checkout).
+        const orders = await orderModel.find({ $or: [{ payment: true }, { paymentMethod: 'COD' }] })
         res.json({success:true,orders})
 
     } catch (error) {
@@ -219,7 +228,7 @@ const userOrders = async (req,res) => {
         
         const { userId } = req.body
 
-        const orders = await orderModel.find({ userId })
+        const orders = await orderModel.find({ userId, $or: [{ payment: true }, { paymentMethod: 'COD' }] })
         res.json({success:true,orders})
 
     } catch (error) {
@@ -268,4 +277,41 @@ const updateStatus = async (req,res) => {
     }
 }
 
-export {verifyRazorpay, verifyStripe ,placeOrder, placeOrderStripe, placeOrderRazorpay, allOrders, userOrders, updateStatus}
+// Admin: push an order to Shiprocket (creates the shipment in your panel).
+const pushToShiprocket = async (req, res) => {
+    try {
+        const { orderId } = req.body
+        const order = await orderModel.findById(orderId)
+        if (!order) return res.json({ success: false, message: 'Order not found' })
+        if (order.shiprocket && order.shiprocket.shipmentId) {
+            return res.json({ success: false, message: 'This order was already pushed to Shiprocket.' })
+        }
+
+        const data = await createShipment(order)
+        order.shiprocket = {
+            orderId: data.order_id,
+            shipmentId: data.shipment_id,
+            status: data.status || 'NEW',
+        }
+        order.markModified('shiprocket')
+        await order.save()
+
+        res.json({ success: true, message: 'Order pushed to Shiprocket', shiprocket: order.shiprocket })
+    } catch (error) {
+        console.log(error)
+        res.json({ success: false, message: error.message })
+    }
+}
+
+// Delete ALL orders (admin bulk action)
+const removeAllOrders = async (req, res) => {
+    try {
+        const result = await orderModel.deleteMany({})
+        res.json({ success: true, message: `Deleted ${result.deletedCount} order(s)` })
+    } catch (error) {
+        console.log(error)
+        res.json({ success: false, message: error.message })
+    }
+}
+
+export {verifyRazorpay, verifyStripe ,placeOrder, placeOrderStripe, placeOrderRazorpay, allOrders, userOrders, updateStatus, pushToShiprocket, removeAllOrders}
