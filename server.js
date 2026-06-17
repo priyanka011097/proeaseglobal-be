@@ -16,6 +16,7 @@ import settingsRouter from './routes/settingsRoute.js'
 import pagesRouter from './routes/pagesRoute.js'
 import faqRouter from './routes/faqRoute.js'
 import inquiryRouter from './routes/inquiryRoute.js'
+import promoRouter from './routes/promoRoute.js'
 
 // App Config
 const app = express()
@@ -41,6 +42,7 @@ app.use('/api/settings',settingsRouter)
 app.use('/api/pages',pagesRouter)
 app.use('/api/faq',faqRouter)
 app.use('/api/inquiry',inquiryRouter)
+app.use('/api/promo',promoRouter)
 
 app.get('/',(req,res)=>{
     res.send("API Working")

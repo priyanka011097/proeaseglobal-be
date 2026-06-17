@@ -1,6 +1,7 @@
 import orderModel from "../models/orderModel.js";
 import userModel from "../models/userModel.js";
 import productModel from "../models/productModel.js";
+import promoModel from "../models/promoModel.js";
 import { createShipment } from "../utils/shiprocket.js";
 import Stripe from 'stripe'
 import razorpay from 'razorpay'
@@ -144,7 +145,7 @@ const verifyStripe = async (req,res) => {
 const placeOrderRazorpay = async (req,res) => {
     try {
         
-        const { userId, items, amount, address, currency: orderCurrency } = req.body
+        const { userId, items, amount, address, currency: orderCurrency, promoCode, discount } = req.body
 
         const cur = (orderCurrency || currency).toUpperCase()
 
@@ -154,6 +155,8 @@ const placeOrderRazorpay = async (req,res) => {
             address,
             amount,
             currency: cur,
+            promoCode: promoCode || '',
+            discount: Number(discount) || 0,
             paymentMethod:"Razorpay",
             payment:false,
             date: Date.now()
@@ -189,8 +192,12 @@ const verifyRazorpay = async (req,res) => {
 
         const orderInfo = await getRazorpay().orders.fetch(razorpay_order_id)
         if (orderInfo.status === 'paid') {
-            await orderModel.findByIdAndUpdate(orderInfo.receipt,{payment:true});
+            const paidOrder = await orderModel.findByIdAndUpdate(orderInfo.receipt,{payment:true});
             await userModel.findByIdAndUpdate(userId,{cartData:{}})
+            // Count promo usage now that payment is confirmed.
+            if (paidOrder?.promoCode) {
+                await promoModel.updateOne({ code: paidOrder.promoCode }, { $inc: { usedCount: 1 } })
+            }
             res.json({ success: true, message: "Payment Successful" })
         } else {
             // Payment not completed — remove the placeholder order so it never

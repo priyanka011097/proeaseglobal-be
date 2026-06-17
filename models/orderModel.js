@@ -5,6 +5,8 @@ const orderSchema = new mongoose.Schema({
     items: { type: Array, required: true },
     amount: { type: Number, required: true },
     currency: { type: String, default: 'INR' },        // INR for India orders, USD for abroad
+    promoCode: { type: String, default: '' },           // applied discount code, if any
+    discount: { type: Number, default: 0 },             // discount amount in the order currency
     address: { type: Object, required: true },
     status: { type: String, required: true, default:'Order Placed' },
     paymentMethod: { type: String, required: true },

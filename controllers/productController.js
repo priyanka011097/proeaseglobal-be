@@ -8,7 +8,7 @@ const PLACEHOLDER_IMG = "https://placehold.co/600x800?text=No+Image"
 const addProduct = async (req, res) => {
     try {
 
-        const { name, description, price, originalPrice, abroadPrice, category, subCategory, sizes, stock, bestseller, color, fabric } = req.body
+        const { name, description, sku, details, price, originalPrice, abroadPrice, category, subCategory, sizes, stock, bestseller, color, fabric } = req.body
 
         const image1 = req.files.image1 && req.files.image1[0]
         const image2 = req.files.image2 && req.files.image2[0]
@@ -35,6 +35,8 @@ const addProduct = async (req, res) => {
             bestseller: bestseller === "true" ? true : false,
             sizes: JSON.parse(sizes),
             stock: stock ? JSON.parse(stock) : [],
+            sku: sku || "",
+            details: details ? JSON.parse(details) : [],
             color: color || "",
             fabric: fabric || "",
             image: imagesUrl,
@@ -154,7 +156,7 @@ const listProducts = async (req, res) => {
 const updateProduct = async (req, res) => {
     try {
 
-        const { id, name, description, price, category, subCategory, sizes, bestseller } = req.body
+        const { id, name, description, sku, price, originalPrice, abroadPrice, category, subCategory, sizes, stock, details, color, fabric, bestseller } = req.body
 
         const existing = await productModel.findById(id)
         if (!existing) {
@@ -175,14 +177,23 @@ const updateProduct = async (req, res) => {
             }
         }
 
+        const parse = (v, fallback) => { try { return v != null ? JSON.parse(v) : fallback } catch { return fallback } }
+
         const updatedData = {
             name,
             description,
+            sku: sku ?? existing.sku,
             category,
             price: Number(price),
+            originalPrice: originalPrice != null ? Number(originalPrice) || 0 : existing.originalPrice,
+            abroadPrice: abroadPrice != null ? Number(abroadPrice) || 0 : existing.abroadPrice,
             subCategory,
+            color: color ?? existing.color,
+            fabric: fabric ?? existing.fabric,
             bestseller: bestseller === "true" ? true : false,
-            sizes: JSON.parse(sizes),
+            sizes: parse(sizes, existing.sizes),
+            stock: parse(stock, existing.stock),
+            details: parse(details, existing.details),
             image: imagesUrl.length > 0 ? imagesUrl : existing.image
         }
 
