@@ -2,7 +2,7 @@ import orderModel from "../models/orderModel.js";
 import userModel from "../models/userModel.js";
 import productModel from "../models/productModel.js";
 import promoModel from "../models/promoModel.js";
-import { createShipment } from "../utils/shiprocket.js";
+import { createShipment, getShippingRate } from "../utils/shiprocket.js";
 import Stripe from 'stripe'
 import razorpay from 'razorpay'
 
@@ -141,6 +141,18 @@ const verifyStripe = async (req,res) => {
 
 }
 
+// Public: quote the shipping charge (INR) to a destination pincode by weight.
+const shippingRate = async (req, res) => {
+    try {
+        const { pincode, weight } = req.body
+        const rate = await getShippingRate(String(pincode || ''), Number(weight) || 0.5, 0)
+        res.json({ success: true, rate })   // rate is INR, or null if unserviceable
+    } catch (error) {
+        console.log(error)
+        res.json({ success: false, message: error.message, rate: null })
+    }
+}
+
 // Placing orders using Razorpay Method
 const placeOrderRazorpay = async (req,res) => {
     try {
@@ -148,6 +160,19 @@ const placeOrderRazorpay = async (req,res) => {
         const { userId, items, amount, address, currency: orderCurrency, promoCode, discount } = req.body
 
         const cur = (orderCurrency || currency).toUpperCase()
+
+        // Free order (e.g. a 100%-off promo): Razorpay can't process a 0 amount,
+        // so place it directly as paid and skip the gateway.
+        if (!(Number(amount) > 0)) {
+            const freeOrder = await orderModel.create({
+                userId, items, address, amount: 0, currency: cur,
+                promoCode: promoCode || '', discount: Number(discount) || 0,
+                paymentMethod: 'Free', payment: true, date: Date.now(),
+            })
+            await userModel.findByIdAndUpdate(userId, { cartData: {} })
+            if (promoCode) await promoModel.updateOne({ code: promoCode }, { $inc: { usedCount: 1 } })
+            return res.json({ success: true, free: true, message: 'Order placed', orderId: freeOrder._id })
+        }
 
         const orderData = {
             userId,
@@ -321,4 +346,4 @@ const removeAllOrders = async (req, res) => {
     }
 }
 
-export {verifyRazorpay, verifyStripe ,placeOrder, placeOrderStripe, placeOrderRazorpay, allOrders, userOrders, updateStatus, pushToShiprocket, removeAllOrders}
+export {verifyRazorpay, verifyStripe ,placeOrder, placeOrderStripe, placeOrderRazorpay, allOrders, userOrders, updateStatus, pushToShiprocket, removeAllOrders, shippingRate}

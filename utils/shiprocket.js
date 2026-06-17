@@ -30,6 +30,45 @@ const getToken = async () => {
 
 const pad = (n) => String(n).padStart(2, '0')
 
+// Resolve the pickup pincode for the configured pickup location (cached).
+let cachedPickupPincode = null
+export const getPickupPincode = async () => {
+    if (cachedPickupPincode) return cachedPickupPincode
+    const token = await getToken()
+    const res = await fetch(`${BASE}/settings/company/pickup`, { headers: { Authorization: `Bearer ${token}` } })
+    const data = await res.json()
+    const list = data?.data?.shipping_address || []
+    const wanted = process.env.SHIPROCKET_PICKUP_LOCATION || 'Primary'
+    const match = list.find((a) => a.pickup_location === wanted) || list[0]
+    cachedPickupPincode = match?.pin_code ? String(match.pin_code) : null
+    return cachedPickupPincode
+}
+
+// Cheapest courier rate (INR) from pickup → delivery pincode for a given weight.
+// Returns null when no courier services the route (e.g. international pincodes).
+export const getShippingRate = async (deliveryPincode, weight = 0.5, cod = 0) => {
+    const token = await getToken()
+    const pickup = await getPickupPincode()
+    if (!pickup || !deliveryPincode) return null
+
+    const url = `${BASE}/courier/serviceability/?pickup_postcode=${pickup}&delivery_postcode=${deliveryPincode}&weight=${weight}&cod=${cod}`
+    const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } })
+    const data = await res.json()
+    const couriers = data?.data?.available_courier_companies || []
+    if (!couriers.length) return null
+
+    // Always charge the customer the cheapest serviceable courier for this route.
+    // Consider every courier returned; ignore invalid/zero quotes.
+    let best = null
+    for (const c of couriers) {
+        const r = Number(c.rate)
+        if (!Number.isFinite(r) || r <= 0) continue
+        if (best === null || r < best.rate) best = { rate: r, courier: c.courier_name }
+    }
+    if (!best) return null
+    return Math.ceil(best.rate)
+}
+
 // Create a Shiprocket order from one of our orders.
 export const createShipment = async (order) => {
     const token = await getToken()
@@ -68,7 +107,7 @@ export const createShipment = async (order) => {
         length: 25,
         breadth: 20,
         height: 5,
-        weight: Math.max(0.5, totalUnits * 0.5),
+        weight: Math.max(0.3, totalUnits * 0.3),   // ~0.3 kg per item
     }
 
     const res = await fetch(`${BASE}/orders/create/adhoc`, {
