@@ -201,7 +201,9 @@ const placeOrderRazorpay = async (req,res) => {
                 console.log(error)
                 return res.json({success:false, message: error})
             }
-            res.json({success:true,order})
+            // Return the publishable key so the frontend Razorpay checkout always
+            // has it, even if the frontend build is missing VITE_RAZORPAY_KEY_ID.
+            res.json({success:true,order,key:process.env.RAZORPAY_KEY_ID})
         })
 
     } catch (error) {
