@@ -3,6 +3,7 @@ import settingsModel from "../models/settingsModel.js"
 
 const defaults = {
     logo: "",
+    headerLogo: "",
     brandName: "PROEASEGLOBAL",
     logoPosition: "left",
     logoHeight: 56,
@@ -47,6 +48,7 @@ const updateSettings = async (req, res) => {
         const update = {
             brandName: b.brandName ?? (existing?.brandName ?? defaults.brandName),
             logo: existing?.logo ?? "",
+            headerLogo: existing?.headerLogo ?? "",
             logoPosition: ['left', 'center', 'right'].includes(b.logoPosition) ? b.logoPosition : (existing?.logoPosition ?? defaults.logoPosition),
             logoHeight: Math.max(20, Math.min(160, num(b.logoHeight, existing?.logoHeight ?? defaults.logoHeight))),
             logoWidth: Math.max(0, Math.min(400, num(b.logoWidth, existing?.logoWidth ?? defaults.logoWidth))),
@@ -66,8 +68,9 @@ const updateSettings = async (req, res) => {
             seoImage: existing?.seoImage ?? "",
         }
 
-        // Image uploads (settings route accepts logo + seoImage fields).
+        // Image uploads (settings route accepts logo + headerLogo + seoImage fields).
         const logoFile = req.files?.logo?.[0] || (req.file && req.file.fieldname === 'logo' ? req.file : null)
+        const headerLogoFile = req.files?.headerLogo?.[0]
         const seoFile = req.files?.seoImage?.[0]
 
         if (b.removeLogo === 'true') {
@@ -75,6 +78,13 @@ const updateSettings = async (req, res) => {
         } else if (logoFile) {
             const result = await cloudinary.uploader.upload(logoFile.path, { resource_type: 'image' })
             update.logo = result.secure_url
+        }
+
+        if (b.removeHeaderLogo === 'true') {
+            update.headerLogo = ""
+        } else if (headerLogoFile) {
+            const result = await cloudinary.uploader.upload(headerLogoFile.path, { resource_type: 'image' })
+            update.headerLogo = result.secure_url
         }
 
         if (b.removeSeoImage === 'true') {

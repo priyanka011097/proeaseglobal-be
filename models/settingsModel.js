@@ -2,7 +2,8 @@ import mongoose from "mongoose";
 
 // Global site settings (logo / branding). Stored as a single document.
 const settingsSchema = new mongoose.Schema({
-    logo: { type: String, default: "" },          // uploaded logo image URL ("" = use built-in mark)
+    logo: { type: String, default: "" },          // site-wide logo URL ("" = use built-in mark)
+    headerLogo: { type: String, default: "" },     // optional header-only logo; falls back to `logo` when empty
     brandName: { type: String, default: "PROEASEGLOBAL" },
     // Header placement & framing of the logo
     logoPosition: { type: String, default: "left" },   // left | center | right
